@@ -1,0 +1,62 @@
+package com.kim.homework.controller;
+
+import com.kim.homework.domain.Memo;
+import com.kim.homework.domain.MemoRepository;
+import com.kim.homework.domain.MemoRequestDto;
+import com.kim.homework.service.MemoService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
+
+@RequiredArgsConstructor
+@RestController
+public class MemoController {
+
+    private final MemoRepository memoRepository;
+    private final MemoService memoService;
+
+    @PostMapping("/api/memos")
+    public String  createMemo(@RequestBody MemoRequestDto requestDto) {
+        Memo memo = new Memo(requestDto);
+        memoRepository.save(memo);
+        return "완료";
+    }
+    @GetMapping("/api/memos")
+    public List<Memo> getMemos() {
+
+        return memoRepository.findAllByOrderByModifiedAtDesc();
+
+    }
+
+    @DeleteMapping("/api/memos/{id}")
+    public Long deleteMemo(@PathVariable Long id,@RequestBody MemoRequestDto requestDto) {
+        Optional<Memo> memos = memoRepository.findById(id);
+        if (memos.isPresent()){
+            System.out.println("post.get().getPassword() : " + memos.get().getPassword() + " requestDto.getPassword() : " + requestDto.getPassword());
+            if (memos.get().getPassword().equals(requestDto.getPassword())) {
+                memoRepository.deleteById(id);
+            } else {
+                System.out.println("비밀번호 오류");
+                return 0L;
+            }
+        }
+        return id;
+    }
+    @PutMapping("/api/memos/{id}")
+    public Long updateMemo(@PathVariable long id, @RequestBody MemoRequestDto requestDto){
+        Optional<Memo> memos = memoRepository.findById(id);
+        if (memos.isPresent()){
+            System.out.println("post.get().getPassword() : " + memos.get().getPassword() + " requestDto.getPassword() : " + requestDto.getPassword());
+            if (memos.get().getPassword().equals(requestDto.getPassword())) {
+                memoService.update(id, requestDto);
+            } else {
+                System.out.println("비밀번호 오류");
+                return 0L;
+            }
+        }
+        return id;
+    }
+}
